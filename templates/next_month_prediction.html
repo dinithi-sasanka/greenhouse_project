@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Next Month Prediction</title>
+</head>
+<body>
+    <h2>Manual Next-Month Prediction</h2>
+
+    <form method="POST">
+        Temperature (°C): <input type="number" name="Temperature_C" step="0.1" value="28"><br>
+        Rainfall (mm): <input type="number" name="Rainfall_mm" step="0.1" value="120"><br>
+        Fertilizer (kg): <input type="number" name="Fertilizer_kg" step="0.1" value="50"><br>
+        Demand Index: <input type="number" name="Demand_Index" step="0.01" value="0.5"><br>
+        Supply Index: <input type="number" name="Supply_Index" step="0.01" value="0.5"><br>
+        Holiday (0/1): <input type="number" name="Holiday" step="1" value="0"><br>
+        <button type="submit">Predict Next Month</button>
+    </form>
+
+    {% if manual_predictions %}
+    <h3>Prediction Result</h3>
+    <table border="1" cellpadding="6">
+        <tr>
+            <th>Month</th>
+            <th>Harvest (kg)</th>
+            <th>Price (Rs/kg)</th>
+        </tr>
+        {% for row in manual_predictions %}
+        <tr>
+            <td>{{ row["Month"] }}</td>
+            <td>{{ row["Harvest (kg)"] }}</td>
+            <td>{{ row["Price (Rs/kg)"] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+</body>
+</html>

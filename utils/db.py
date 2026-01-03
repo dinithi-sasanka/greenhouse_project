@@ -1,9 +1,9 @@
+# utils/db.py
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import os
 from dotenv import load_dotenv
 
-# Load environment variables from .env
 load_dotenv()
 
 DB_HOST = os.getenv("DB_HOST")
@@ -12,21 +12,74 @@ DB_USER = os.getenv("DB_USER")
 DB_PASS = os.getenv("DB_PASS")
 
 def get_connection():
-    """Create and return a new database connection"""
-    conn = psycopg2.connect(
+    return psycopg2.connect(
         host=DB_HOST,
         database=DB_NAME,
         user=DB_USER,
         password=DB_PASS
     )
-    return conn
 
+# ---------- FETCH ----------
 def fetch_users():
-    """Fetch all users from the database"""
+    conn = get_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("SELECT * FROM users ORDER BY id")
+    users = cur.fetchall()
+    cur.close()
+    conn.close()
+    return users
+
+# ---------- ADD ----------
+def add_user(username, password, role, email, address, telephone):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO users (username, password, role, email, address, telephone)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """, (username, password, role, email, address, telephone))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+# ---------- DELETE ----------
+def delete_user(user_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM users WHERE id = %s", (user_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+# ---------- UPDATE ----------
+def update_user(user_id, username, role, email, address, telephone):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        UPDATE users
+        SET username=%s, role=%s, email=%s, address=%s, telephone=%s
+        WHERE id=%s
+    """, (username, role, email, address, telephone, user_id))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+# ---------- SEARCH ----------
+def search_users(keyword):
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
-    cursor.execute("SELECT * FROM users;")
+
+    query = """
+    SELECT * FROM users
+    WHERE username ILIKE %s
+       OR email ILIKE %s
+       OR role ILIKE %s
+       OR telephone ILIKE %s
+    """
+    like = f"%{keyword}%"
+    cursor.execute(query, (like, like, like, like))
+
     users = cursor.fetchall()
     cursor.close()
     conn.close()
     return users
+

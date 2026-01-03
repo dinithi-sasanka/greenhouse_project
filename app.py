@@ -7,7 +7,7 @@ from utils.preprocess import predict_next_months, predict_manual_next_month
 from utils.db import fetch_users, add_user, delete_user, update_user, search_users, validate_user
 
 app = Flask(__name__)
-app.secret_key = "your_secret_key_here"  # Needed for session management
+app.secret_key = "your_secret_key_here"
 
 # -------------------------------
 # DECORATORS
@@ -25,9 +25,16 @@ def admin_required(f):
     def decorated_function(*args, **kwargs):
         if session.get("role") != "admin":
             flash("Access denied! Admins only.", "error")
-            return redirect(url_for('users'))  # redirect normal users to users page
+            return redirect(url_for('users'))
         return f(*args, **kwargs)
     return decorated_function
+
+# -------------------------------
+# DEFAULT ROUTE -> LOGIN
+# -------------------------------
+@app.route('/')
+def index():
+    return redirect(url_for('login'))
 
 # -------------------------------
 # LOGIN
@@ -50,11 +57,24 @@ def login():
     return render_template('login.html')
 
 # -------------------------------
-# LOGOUT
+# LOGOUT WITH CONFIRMATION
 # -------------------------------
 @app.route('/logout')
 @login_required
 def logout():
+    return """
+        <script>
+            if(confirm('Do you want to logout from the system?')) {
+                window.location.href='/logout_confirm';
+            } else {
+                window.location.href='/dashboard';
+            }
+        </script>
+    """
+
+@app.route('/logout_confirm')
+@login_required
+def logout_confirm():
     session.clear()
     flash("Logged out successfully.")
     return redirect(url_for('login'))
@@ -87,7 +107,7 @@ def next_month_prediction():
     return render_template('next_month_prediction.html', manual_predictions=manual_predictions)
 
 # -------------------------------
-# USERS PAGE (all can view, admin can add/edit/delete)
+# USERS PAGE
 # -------------------------------
 @app.route('/users', methods=['GET', 'POST'])
 @login_required
@@ -122,17 +142,18 @@ def users():
 @login_required
 @admin_required
 def edit_user(user_id):
+    new_password = request.form.get('password')  # Get new password from form
     update_user(
         user_id,
         request.form['username'],
         request.form['role'],
         request.form['email'],
         request.form['address'],
-        request.form['telephone']
+        request.form['telephone'],
+        password=new_password if new_password else None  # Only update if not empty
     )
     flash("User updated successfully!")
     return redirect(url_for('users'))
-
 # -------------------------------
 # DELETE USER (admin only)
 # -------------------------------

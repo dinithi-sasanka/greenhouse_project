@@ -3,15 +3,19 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import os
 from dotenv import load_dotenv
+from werkzeug.security import generate_password_hash, check_password_hash
 
+# Load environment variables
 load_dotenv()
-
 DB_HOST = os.getenv("DB_HOST")
 DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
 DB_PASS = os.getenv("DB_PASS")
 
 
+# -------------------------------
+# DATABASE CONNECTION
+# -------------------------------
 def get_connection():
     """Return a new database connection."""
     return psycopg2.connect(
@@ -22,7 +26,9 @@ def get_connection():
     )
 
 
-# ---------- FETCH ALL USERS ----------
+# -------------------------------
+# FETCH ALL USERS
+# -------------------------------
 def fetch_users():
     conn = get_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -33,20 +39,26 @@ def fetch_users():
     return users
 
 
-# ---------- ADD USER ----------
+# -------------------------------
+# ADD USER
+# -------------------------------
 def add_user(username, password, role, email, address, telephone):
+    """Add a new user with hashed password."""
+    hashed_pwd = generate_password_hash(password)  # <--- Make sure this works
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
         INSERT INTO users (username, password, role, email, address, telephone)
         VALUES (%s, %s, %s, %s, %s, %s)
-    """, (username, password, role, email, address, telephone))
+    """, (username, hashed_pwd, role, email, address, telephone))
     conn.commit()
     cur.close()
     conn.close()
 
 
-# ---------- DELETE USER ----------
+# -------------------------------
+# DELETE USER
+# -------------------------------
 def delete_user(user_id):
     conn = get_connection()
     cur = conn.cursor()
@@ -56,21 +68,40 @@ def delete_user(user_id):
     conn.close()
 
 
-# ---------- UPDATE USER ----------
-def update_user(user_id, username, role, email, address, telephone):
+# -------------------------------
+# UPDATE USER
+# -------------------------------
+def update_user(user_id, username, role, email, address, telephone, password=None):
+    """
+    Update user details. If password is provided, hash it and update; otherwise keep existing password.
+    """
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("""
-        UPDATE users
-        SET username=%s, role=%s, email=%s, address=%s, telephone=%s
-        WHERE id=%s
-    """, (username, role, email, address, telephone, user_id))
+
+    if password:  # If new password provided
+        from werkzeug.security import generate_password_hash
+        hashed_pwd = generate_password_hash(password)
+        cur.execute("""
+            UPDATE users
+            SET username=%s, role=%s, email=%s, address=%s, telephone=%s, password=%s
+            WHERE id=%s
+        """, (username, role, email, address, telephone, hashed_pwd, user_id))
+    else:
+        cur.execute("""
+            UPDATE users
+            SET username=%s, role=%s, email=%s, address=%s, telephone=%s
+            WHERE id=%s
+        """, (username, role, email, address, telephone, user_id))
+
     conn.commit()
     cur.close()
     conn.close()
 
 
-# ---------- SEARCH USERS ----------
+
+# -------------------------------
+# SEARCH USERS
+# -------------------------------
 def search_users(keyword):
     conn = get_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -88,18 +119,27 @@ def search_users(keyword):
     return users
 
 
-# ---------- VALIDATE LOGIN ----------
+# -------------------------------
+# VALIDATE LOGIN
+# -------------------------------
 def validate_user(username, password):
     """
-    Returns user dict if username and password match, else None.
+    Check if the given username exists and the password matches the hashed password in DB.
+    Returns the user dictionary if successful, else None.
     """
     conn = get_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("""
-        SELECT * FROM users
-        WHERE username = %s AND password = %s
-    """, (username, password))
-    user = cur.fetchone()
-    cur.close()
-    conn.close()
-    return user
+
+    try:
+        cur.execute("SELECT * FROM users WHERE username = %s", (username,))
+        user = cur.fetchone()
+    finally:
+        cur.close()
+        conn.close()
+
+    if user and check_password_hash(user['password'], password):
+        return user
+
+    return None
+
+

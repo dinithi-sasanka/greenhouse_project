@@ -11,7 +11,9 @@ DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
 DB_PASS = os.getenv("DB_PASS")
 
+
 def get_connection():
+    """Return a new database connection."""
     return psycopg2.connect(
         host=DB_HOST,
         database=DB_NAME,
@@ -19,7 +21,8 @@ def get_connection():
         password=DB_PASS
     )
 
-# ---------- FETCH ----------
+
+# ---------- FETCH ALL USERS ----------
 def fetch_users():
     conn = get_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -29,7 +32,8 @@ def fetch_users():
     conn.close()
     return users
 
-# ---------- ADD ----------
+
+# ---------- ADD USER ----------
 def add_user(username, password, role, email, address, telephone):
     conn = get_connection()
     cur = conn.cursor()
@@ -41,7 +45,8 @@ def add_user(username, password, role, email, address, telephone):
     cur.close()
     conn.close()
 
-# ---------- DELETE ----------
+
+# ---------- DELETE USER ----------
 def delete_user(user_id):
     conn = get_connection()
     cur = conn.cursor()
@@ -50,7 +55,8 @@ def delete_user(user_id):
     cur.close()
     conn.close()
 
-# ---------- UPDATE ----------
+
+# ---------- UPDATE USER ----------
 def update_user(user_id, username, role, email, address, telephone):
     conn = get_connection()
     cur = conn.cursor()
@@ -63,23 +69,37 @@ def update_user(user_id, username, role, email, address, telephone):
     cur.close()
     conn.close()
 
-# ---------- SEARCH ----------
+
+# ---------- SEARCH USERS ----------
 def search_users(keyword):
     conn = get_connection()
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
-
-    query = """
-    SELECT * FROM users
-    WHERE username ILIKE %s
-       OR email ILIKE %s
-       OR role ILIKE %s
-       OR telephone ILIKE %s
-    """
+    cur = conn.cursor(cursor_factory=RealDictCursor)
     like = f"%{keyword}%"
-    cursor.execute(query, (like, like, like, like))
-
-    users = cursor.fetchall()
-    cursor.close()
+    cur.execute("""
+        SELECT * FROM users
+        WHERE username ILIKE %s
+           OR email ILIKE %s
+           OR role ILIKE %s
+           OR telephone ILIKE %s
+    """, (like, like, like, like))
+    users = cur.fetchall()
+    cur.close()
     conn.close()
     return users
 
+
+# ---------- VALIDATE LOGIN ----------
+def validate_user(username, password):
+    """
+    Returns user dict if username and password match, else None.
+    """
+    conn = get_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("""
+        SELECT * FROM users
+        WHERE username = %s AND password = %s
+    """, (username, password))
+    user = cur.fetchone()
+    cur.close()
+    conn.close()
+    return user

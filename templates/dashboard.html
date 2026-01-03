@@ -6,9 +6,15 @@
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; }
         nav { margin-bottom: 20px; }
-        nav a { margin-right: 15px; text-decoration: none; color: blue; font-weight: bold; }
-        table { border-collapse: collapse; margin-top: 10px; width: 50%; }
+        nav a { 
+            margin-right: 15px; 
+            text-decoration: none; 
+            color: blue; 
+            font-weight: bold; 
+        }
+        table { border-collapse: collapse; margin-top: 10px; width: 60%; }
         table, th, td { border: 1px solid black; padding: 6px; text-align: center; }
+        h2 { margin-top: 0; }
     </style>
 </head>
 <body>
@@ -18,7 +24,7 @@
         <a href="{{ url_for('dashboard') }}">Dashboard</a>
         <a href="{{ url_for('next_month_prediction') }}">Next Month Prediction</a>
         <a href="{{ url_for('users') }}">Users</a>
-        <a href="{{ url_for('logout') }}">Logout</a>
+        <a href="{{ url_for('logout') }}" onclick="return confirmLogout();">Logout</a>
     </nav>
 
     <h2>Auto Future Prediction (12 Months)</h2>
@@ -43,6 +49,12 @@
     <canvas id="autoChart" width="900"></canvas>
 
     <script>
+        // Logout confirmation
+        function confirmLogout() {
+            return confirm("Do you want to logout from the system?");
+        }
+
+        // Chart.js code
         const labels = {{ auto_predictions | map(attribute="Month") | list | safe }};
         const harvestData = {{ auto_predictions | map(attribute="Harvest (kg)") | list | safe }};
         const priceData = {{ auto_predictions | map(attribute="Price (Rs/kg)") | list | safe }};

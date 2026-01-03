@@ -18,51 +18,49 @@
             background-color: #f2f2f2;
             border: 1px solid #ccc;
         }
-        input:invalid {
-            border-color: red;
-        }
-        input:valid {
-            border-color: green;
-        }
     </style>
 </head>
 <body>
 
-<h2>Add New User</h2>
-<form method="POST">
-    Username: <input name="username" required pattern=".{3,}" title="Minimum 3 characters"><br><br>
-
-    Password: 
-    <div class="password-container">
-        <input type="password" id="add_password" name="password" required pattern=".{6,}" title="Minimum 6 characters">
-        <span class="toggle-password" onclick="toggleAddPassword()">👁️</span>
-    </div>
-    <br><br>
-
-    Role: 
-    <select name="role">
-        <option value="user">User</option>
-        <option value="admin">Admin</option>
-    </select><br><br>
-
-    Email: <input name="email" type="email" placeholder="example@email.com" required><br><br>
-    Address: <input name="address" required><br><br>
-    Telephone: <input name="telephone" type="tel" pattern="[0-9]{10}" placeholder="10-digit number" required><br><br>
-
-    <button type="submit">Add User</button>
-</form>
-
-<hr>
-
 <h2>All Users</h2>
 
+<!-- Search Form -->
 <form method="GET">
     <input type="text" name="search" placeholder="Search username/email" value="{{ request.args.get('search') }}">
     <button type="submit">Search</button>
     <button type="button" onclick="window.location.href='/users'">Clear</button>
 </form>
-<br>
 
+<!-- ADD USER FORM (ADMIN ONLY) -->
+{% if role == 'admin' %}
+<hr>
+<h2>Add New User</h2>
+<form method="POST">
+    Username: <input name="username" required pattern=".{3,}" title="Minimum 3 characters"><br>
+
+    Password: 
+    <div class="password-container">
+        <input type="password" id="add_password" name="password" required pattern=".{6,}" title="Minimum 6 characters">
+        <span class="toggle-password" onclick="toggleAddPassword()">👁️</span>
+    </div><br>
+
+    Role: 
+    <select name="role">
+        <option value="user">User</option>
+        <option value="admin">Admin</option>
+    </select><br>
+
+    Email: <input name="email" type="email" placeholder="example@email.com" required><br>
+    Address: <input name="address" required><br>
+    Telephone: <input name="telephone" type="tel" pattern="[0-9]{10}" placeholder="10-digit number" required><br>
+
+    <button type="submit">Add User</button>
+</form>
+{% endif %}
+
+<hr>
+
+<!-- USERS TABLE -->
 <table border="1" cellpadding="6">
 <tr>
     <th>ID</th>
@@ -72,37 +70,47 @@
     <th>Email</th>
     <th>Address</th>
     <th>Telephone</th>
+    {% if role == 'admin' %}
     <th>Actions</th>
+    {% endif %}
 </tr>
 
 {% for u in users %}
 <tr>
 <form method="POST" action="/edit_user/{{ u.id }}">
     <td>{{ u.id }}</td>
-    <td><input name="username" value="{{ u.username }}" required pattern=".{3,}" title="Minimum 3 characters"></td>
+    <td><input name="username" value="{{ u.username }}" required pattern=".{3,}" title="Minimum 3 characters" {% if role != 'admin' %}readonly{% endif %}></td>
     
     <td>
         <div class="password-container">
             <input type="password" class="user-password" value="{{ u.password }}" readonly>
+            {% if role == 'admin' %}
             <span class="toggle-password" onclick="togglePassword(this)">👁️</span>
+            {% endif %}
         </div>
     </td>
 
     <td>
+        {% if role == 'admin' %}
         <select name="role">
             <option value="user" {% if u.role=='user' %}selected{% endif %}>User</option>
             <option value="admin" {% if u.role=='admin' %}selected{% endif %}>Admin</option>
         </select>
+        {% else %}
+        {{ u.role }}
+        {% endif %}
     </td>
 
-    <td><input name="email" type="email" value="{{ u.email }}" required></td>
-    <td><input name="address" value="{{ u.address }}" required></td>
-    <td><input name="telephone" type="tel" value="{{ u.telephone }}" pattern="[0-9]{10}" required></td>
+    <td><input name="email" type="email" value="{{ u.email }}" required {% if role != 'admin' %}readonly{% endif %}></td>
+    <td><input name="address" value="{{ u.address }}" required {% if role != 'admin' %}readonly{% endif %}></td>
+    <td><input name="telephone" type="tel" value="{{ u.telephone }}" pattern="[0-9]{10}" required {% if role != 'admin' %}readonly{% endif %}></td>
 
+    {% if role == 'admin' %}
     <td>
         <button type="submit">Update</button>
         <a href="/delete_user/{{ u.id }}" onclick="return confirm('Delete user?')">Delete</a>
     </td>
+    {% endif %}
 </form>
 </tr>
 {% endfor %}

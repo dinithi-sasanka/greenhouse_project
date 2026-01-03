@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <style>
+        .password-container {
+            position: relative;
+            display: inline-block;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .flash-message {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Login</h2>
+
+<!-- Flash messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, msg in messages %}
+      <div class="flash-message">{{ msg }}</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<form method="POST">
+    Username: <input type="text" name="username" required><br><br>
+
+    Password:
+    <div class="password-container">
+        <input type="password" id="login_password" name="password" required>
+        <span class="toggle-password" onclick="togglePassword()">👁️</span>
+    </div><br><br>
+
+    <button type="submit">Login</button>
+</form>
+
+<script>
+function togglePassword() {
+    var pwd = document.getElementById('login_password');
+    pwd.type = (pwd.type === 'password') ? 'text' : 'password';
+}
+</script>
+
+</body>
+</html>

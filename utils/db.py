@@ -44,7 +44,7 @@ def fetch_users():
 # -------------------------------
 def add_user(username, password, role, email, address, telephone):
     """Add a new user with hashed password."""
-    hashed_pwd = generate_password_hash(password)  # <--- Make sure this works
+    hashed_pwd = generate_password_hash(password)
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
@@ -79,7 +79,6 @@ def update_user(user_id, username, role, email, address, telephone, password=Non
     cur = conn.cursor()
 
     if password:  # If new password provided
-        from werkzeug.security import generate_password_hash
         hashed_pwd = generate_password_hash(password)
         cur.execute("""
             UPDATE users
@@ -96,7 +95,6 @@ def update_user(user_id, username, role, email, address, telephone, password=Non
     conn.commit()
     cur.close()
     conn.close()
-
 
 
 # -------------------------------
@@ -129,7 +127,6 @@ def validate_user(username, password):
     """
     conn = get_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
-
     try:
         cur.execute("SELECT * FROM users WHERE username = %s", (username,))
         user = cur.fetchone()
@@ -139,7 +136,31 @@ def validate_user(username, password):
 
     if user and check_password_hash(user['password'], password):
         return user
-
     return None
 
 
+# -------------------------------
+# FETCH SINGLE USER BY USERNAME
+# -------------------------------
+def fetch_user_by_username(username):
+    conn = get_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("SELECT * FROM users WHERE username = %s", (username,))
+    user = cur.fetchone()
+    cur.close()
+    conn.close()
+    return user
+
+
+# -------------------------------
+# RESET USER PASSWORD
+# -------------------------------
+def update_user_password(username, new_password):
+    """Hash the new password and update for the given username."""
+    hashed = generate_password_hash(new_password)
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE users SET password=%s WHERE username=%s", (hashed, username))
+    conn.commit()
+    cur.close()
+    conn.close()

@@ -3,8 +3,12 @@ from functools import wraps
 
 # ML functions
 from utils.preprocess import predict_next_months, predict_manual_next_month
+
 # DB functions
-from utils.db import fetch_users, add_user, delete_user, update_user, search_users, validate_user
+from utils.db import (
+    fetch_users, add_user, delete_user, update_user, search_users,
+    validate_user, fetch_user_by_username, update_user_password
+)
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key_here"
@@ -20,6 +24,7 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -29,12 +34,14 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
 # -------------------------------
-# DEFAULT ROUTE -> LOGIN
+# DEFAULT ROUTE
 # -------------------------------
 @app.route('/')
 def index():
     return redirect(url_for('login'))
+
 
 # -------------------------------
 # LOGIN
@@ -54,10 +61,41 @@ def login():
         else:
             flash("Invalid username or password!", "error")
             return redirect(url_for('login'))
+
     return render_template('login.html')
 
+
 # -------------------------------
-# LOGOUT WITH CONFIRMATION
+# FORGOT PASSWORD
+# -------------------------------
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        username = request.form['username']
+        user = fetch_user_by_username(username)
+
+        if not user:
+            flash("Username not found.", "error")
+            return redirect(url_for('forgot_password'))
+
+        return redirect(url_for('reset_password', username=username))
+
+    return render_template('forgot_password.html')
+
+
+@app.route('/reset-password/<username>', methods=['GET', 'POST'])
+def reset_password(username):
+    if request.method == 'POST':
+        new_password = request.form['new_password']  # ✅ FIXED
+        update_user_password(username, new_password)
+        flash("Password updated successfully! You can now login.")
+        return redirect(url_for('login'))
+
+    return render_template('reset_password.html', username=username)
+
+
+# -------------------------------
+# LOGOUT
 # -------------------------------
 @app.route('/logout')
 @login_required
@@ -72,12 +110,14 @@ def logout():
         </script>
     """
 
+
 @app.route('/logout_confirm')
 @login_required
 def logout_confirm():
     session.clear()
     flash("Logged out successfully.")
     return redirect(url_for('login'))
+
 
 # -------------------------------
 # DASHBOARD
@@ -88,6 +128,7 @@ def dashboard():
     auto_predictions = predict_next_months().to_dict(orient='records')
     return render_template('dashboard.html', auto_predictions=auto_predictions)
 
+
 # -------------------------------
 # NEXT MONTH PREDICTION
 # -------------------------------
@@ -95,6 +136,7 @@ def dashboard():
 @login_required
 def next_month_prediction():
     manual_predictions = None
+
     if request.method == 'POST':
         manual_predictions = predict_manual_next_month(
             Temperature_C=float(request.form['Temperature_C']),
@@ -104,7 +146,12 @@ def next_month_prediction():
             Supply_Index=float(request.form['Supply_Index']),
             Holiday=int(request.form['Holiday'])
         ).to_dict(orient='records')
-    return render_template('next_month_prediction.html', manual_predictions=manual_predictions)
+
+    return render_template(
+        'next_month_prediction.html',
+        manual_predictions=manual_predictions
+    )
+
 
 # -------------------------------
 # USERS PAGE
@@ -127,13 +174,18 @@ def users():
         flash("User added successfully!")
         return redirect(url_for('users'))
 
-    # SEARCH
+    # SEARCH USERS
     if search:
         users_list = search_users(search)
     else:
         users_list = fetch_users()
 
-    return render_template('users.html', users=users_list, role=session.get('role'))
+    return render_template(
+        'users.html',
+        users=users_list,
+        role=session.get('role')
+    )
+
 
 # -------------------------------
 # EDIT USER (admin only)
@@ -142,7 +194,8 @@ def users():
 @login_required
 @admin_required
 def edit_user(user_id):
-    new_password = request.form.get('password')  # Get new password from form
+    new_password = request.form.get('password')  # optional
+
     update_user(
         user_id,
         request.form['username'],
@@ -150,10 +203,13 @@ def edit_user(user_id):
         request.form['email'],
         request.form['address'],
         request.form['telephone'],
-        password=new_password if new_password else None  # Only update if not empty
+        password=new_password if new_password else None
     )
+
     flash("User updated successfully!")
     return redirect(url_for('users'))
+
+
 # -------------------------------
 # DELETE USER (admin only)
 # -------------------------------
@@ -164,6 +220,7 @@ def delete_user_route(user_id):
     delete_user(user_id)
     flash("User deleted successfully!")
     return redirect(url_for('users'))
+
 
 # -------------------------------
 # RUN APP

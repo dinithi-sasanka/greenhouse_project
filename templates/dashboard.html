@@ -1,91 +1,68 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Greenhouse Prediction Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        nav { margin-bottom: 20px; }
-        nav a { 
-            margin-right: 15px; 
-            text-decoration: none; 
-            color: blue; 
-            font-weight: bold; 
-        }
-        table { border-collapse: collapse; margin-top: 10px; width: 60%; }
-        table, th, td { border: 1px solid black; padding: 6px; text-align: center; }
-        h2 { margin-top: 0; }
-    </style>
-</head>
-<body>
+{% extends "base.html" %}
 
-    <!-- Navigation Menu -->
-    <nav>
-        <a href="{{ url_for('dashboard') }}">Dashboard</a>
-        <a href="{{ url_for('next_month_prediction') }}">Next Month Prediction</a>
-        <a href="{{ url_for('users') }}">Users</a>
-        <a href="{{ url_for('logout') }}" onclick="return confirmLogout();">Logout</a>
-    </nav>
+{% block title %}Greenhouse Prediction Dashboard{% endblock %}
 
-    <h2>Auto Future Prediction (12 Months)</h2>
+{% block content %}
 
-    <!-- Auto Prediction Table -->
-    <table>
-        <tr>
-            <th>Month</th>
-            <th>Harvest (kg)</th>
-            <th>Price (Rs/kg)</th>
-        </tr>
-        {% for row in auto_predictions %}
-        <tr>
-            <td>{{ row["Month"] }}</td>
-            <td>{{ row["Harvest (kg)"] }}</td>
-            <td>{{ row["Price (Rs/kg)"] }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+<h2>Auto Future Prediction (12 Months)</h2>
 
-    <!-- Auto Prediction Chart -->
-    <canvas id="autoChart" width="900"></canvas>
+<!-- Auto Prediction Table -->
+<table border="1" cellpadding="6" cellspacing="0" width="60%">
+    <tr>
+        <th>Month</th>
+        <th>Harvest (kg)</th>
+        <th>Price (Rs/kg)</th>
+    </tr>
+    {% for row in auto_predictions %}
+    <tr>
+        <td>{{ row["Month"] }}</td>
+        <td>{{ row["Harvest (kg)"] }}</td>
+        <td>{{ row["Price (Rs/kg)"] }}</td>
+    </tr>
+    {% endfor %}
+</table>
 
-    <script>
-        // Logout confirmation
-        function confirmLogout() {
-            return confirm("Do you want to logout from the system?");
-        }
+<br>
 
-        // Chart.js code
-        const labels = {{ auto_predictions | map(attribute="Month") | list | safe }};
-        const harvestData = {{ auto_predictions | map(attribute="Harvest (kg)") | list | safe }};
-        const priceData = {{ auto_predictions | map(attribute="Price (Rs/kg)") | list | safe }};
+<!-- Auto Prediction Chart -->
+<canvas id="autoChart" width="900"></canvas>
 
-        new Chart(document.getElementById("autoChart"), {
-            type: "line",
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: "Harvest (kg)",
-                        data: harvestData,
-                        borderColor: "green",
-                        borderWidth: 2,
-                        fill: false
-                    },
-                    {
-                        label: "Price (Rs/kg)",
-                        data: priceData,
-                        borderColor: "blue",
-                        borderWidth: 2,
-                        fill: false
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                scales: { y: { beginAtZero: false } }
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const labels = {{ auto_predictions | map(attribute="Month") | list | safe }};
+    const harvestData = {{ auto_predictions | map(attribute="Harvest (kg)") | list | safe }};
+    const priceData = {{ auto_predictions | map(attribute="Price (Rs/kg)") | list | safe }};
+
+    new Chart(document.getElementById("autoChart"), {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: "Harvest (kg)",
+                    data: harvestData,
+                    borderColor: "green",
+                    borderWidth: 2,
+                    fill: false
+                },
+                {
+                    label: "Price (Rs/kg)",
+                    data: priceData,
+                    borderColor: "blue",
+                    borderWidth: 2,
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: false }
             }
-        });
-    </script>
+        }
+    });
+</script>
 
-</body>
-</html>
+{% endblock %}

@@ -18,6 +18,10 @@
         .flash-message {
             color: red;
         }
+        a {
+            text-decoration: none;
+            color: blue;
+        }
     </style>
 </head>
 <body>
@@ -44,6 +48,9 @@
 
     <button type="submit">Login</button>
 </form>
+
+<!-- Forgot password link -->
+<p><a href="{{ url_for('forgot_password') }}">Forgot Password?</a></p>
 
 <script>
 function togglePassword() {

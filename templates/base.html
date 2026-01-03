@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}Greenhouse System{% endblock %}</title>
+</head>
+<body>
+
+    <!-- NAVIGATION BAR -->
+    <nav style="padding:10px; background:#2c3e50;">
+        <a href="{{ url_for('dashboard') }}" style="color:white;">Dashboard</a> |
+
+        <a href="{{ url_for('next_month_prediction') }}" style="color:white;">
+            Prediction
+        </a> |
+
+        {% if session.get('role') == 'admin' %}
+            <a href="{{ url_for('users') }}" style="color:white;">Users</a> |
+        {% endif %}
+
+        <span style="color:white;">
+            Logged in as {{ session.get('username') }}
+        </span> |
+
+        <a href="{{ url_for('logout') }}" style="color:white;">Logout</a>
+    </nav>
+
+    <hr>
+
+    <!-- PAGE CONTENT -->
+    {% block content %}{% endblock %}
+
+</body>
+</html>

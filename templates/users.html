@@ -1,67 +1,92 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Users Management</title>
-    <style>
-        .password-container {
-            position: relative;
-            display: inline-block;
-        }
-        .toggle-password {
-            position: absolute;
-            right: 5px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Users Management{% endblock %}
+
+{% block content %}
+
+<style>
+    .password-container {
+        position: relative;
+        display: inline-block;
+        width: 150px; /* Width for Add User password */
+    }
+    .toggle-password {
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+    }
+    table th, table td {
+        padding: 8px 12px;
+        text-align: center;
+        vertical-align: middle;
+    }
+</style>
 
 <h2>All Users</h2>
 
 <!-- Search Form -->
 <form method="GET">
-    <input type="text" name="search" placeholder="Search username/email" value="{{ request.args.get('search') }}">
+    <input type="text" name="search"
+           placeholder="Search username/email"
+           value="{{ request.args.get('search') }}">
     <button type="submit">Search</button>
-    <button type="button" onclick="window.location.href='/users'">Clear</button>
+    <button type="button" onclick="window.location.href='{{ url_for('users') }}'">Clear</button>
 </form>
 
 <!-- ADD USER FORM (ADMIN ONLY) -->
 {% if role == 'admin' %}
 <hr>
 <h2>Add New User</h2>
+
 <form method="POST">
-    Username: <input name="username" required pattern=".{3,}" title="Minimum 3 characters"><br>
+    Username:
+    <input name="username" required pattern=".{3,}" title="Minimum 3 characters"><br><br>
 
-    Password: 
+    Password:
     <div class="password-container">
-        <input type="password" id="add_password" name="password" required pattern=".{6,}" title="Minimum 6 characters">
+        <input type="password" id="add_password" name="password"
+               required pattern="\d{6}" title="Password must be exactly 6 digits"
+               style="width: 100%;">
         <span class="toggle-password" onclick="toggleAddPassword()">👁️</span>
-    </div><br>
+    </div><br><br>
 
-    Role: 
+    Role:
     <select name="role">
         <option value="user">User</option>
         <option value="admin">Admin</option>
-    </select><br>
+    </select><br><br>
 
-    Email: <input name="email" type="email" placeholder="example@email.com" required><br>
-    Address: <input name="address" required><br>
-    Telephone: <input name="telephone" type="tel" pattern="[0-9]{10}" placeholder="10-digit number" required><br>
+    Email:
+    <input name="email" type="email" required><br><br>
+
+    Address:
+    <input name="address" required><br><br>
+
+    Telephone:
+    <input name="telephone" type="tel" pattern="[0-9]{10}"
+           placeholder="10-digit number" required><br><br>
 
     <button type="submit">Add User</button>
 </form>
+
+<script>
+function toggleAddPassword() {
+    var pwd = document.getElementById('add_password');
+    pwd.type = (pwd.type === 'password') ? 'text' : 'password';
+}
+</script>
 {% endif %}
 
 <hr>
 
 <!-- USERS TABLE -->
-<table border="1" cellpadding="6">
+<table border="1" cellpadding="6" style="width: 100%;">
 <tr>
     <th>ID</th>
     <th>Username</th>
-    <th>New Password</th>
+    <th style="width: 180px;">New Password</th>
     <th>Role</th>
     <th>Email</th>
     <th>Address</th>
@@ -71,19 +96,23 @@
 
 {% for u in users %}
 <tr>
-<form method="POST" action="/edit_user/{{ u.id }}">
+<form method="POST" action="{{ url_for('edit_user', user_id=u.id) }}">
     <td>{{ u.id }}</td>
 
-    <td><input name="username" value="{{ u.username }}" required pattern=".{3,}" title="Minimum 3 characters" {% if role != 'admin' %}readonly{% endif %}></td>
-
     <td>
+        <input name="username" value="{{ u.username }}"
+               required pattern=".{3,}"
+               {% if role != 'admin' %}readonly{% endif %}>
+    </td>
+
+    <td style="width: 180px;">
         {% if role == 'admin' %}
-        <div class="password-container">
-            <input type="password" name="password" placeholder="Leave blank to keep current">
-            <span class="toggle-password" onclick="togglePassword(this)">👁️</span>
-        </div>
+            <input type="password" name="password"
+                   placeholder="Leave blank to keep current"
+                   pattern="\d{6}" title="Password must be exactly 6 digits"
+                   style="width: 100%;">
         {% else %}
-        ********
+            ********
         {% endif %}
     </td>
 
@@ -98,14 +127,27 @@
         {% endif %}
     </td>
 
-    <td><input name="email" type="email" value="{{ u.email }}" required {% if role != 'admin' %}readonly{% endif %}></td>
-    <td><input name="address" value="{{ u.address }}" required {% if role != 'admin' %}readonly{% endif %}></td>
-    <td><input name="telephone" type="tel" value="{{ u.telephone }}" pattern="[0-9]{10}" required {% if role != 'admin' %}readonly{% endif %}></td>
+    <td>
+        <input name="email" type="email" value="{{ u.email }}"
+               required {% if role != 'admin' %}readonly{% endif %}>
+    </td>
+
+    <td>
+        <input name="address" value="{{ u.address }}"
+               required {% if role != 'admin' %}readonly{% endif %}>
+    </td>
+
+    <td>
+        <input name="telephone" type="tel" value="{{ u.telephone }}"
+               pattern="[0-9]{10}"
+               required {% if role != 'admin' %}readonly{% endif %}>
+    </td>
 
     {% if role == 'admin' %}
     <td>
         <button type="submit">Update</button>
-        <a href="/delete_user/{{ u.id }}" onclick="return confirm('Delete user?')">Delete</a>
+        <a href="{{ url_for('delete_user_route', user_id=u.id) }}"
+           onclick="return confirm('Delete user?')">Delete</a>
     </td>
     {% endif %}
 </form>
@@ -113,17 +155,4 @@
 {% endfor %}
 </table>
 
-<script>
-function toggleAddPassword() {
-    var pwd = document.getElementById('add_password');
-    pwd.type = (pwd.type === 'password') ? 'text' : 'password';
-}
-
-function togglePassword(span) {
-    var pwd = span.previousElementSibling;
-    pwd.type = (pwd.type === 'password') ? 'text' : 'password';
-}
-</script>
-
-</body>
-</html>
+{% endblock %}

@@ -1,3 +1,5 @@
+
+
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 from utils.model_loader import (
@@ -6,6 +8,7 @@ from utils.model_loader import (
     harvest_scaler,
     price_scaler
 )
+from datetime import datetime
 
 DATA_PATH = "data/dataset.csv"
 df_data = pd.read_csv(DATA_PATH)
@@ -13,12 +16,17 @@ df_data["Month_dt"] = pd.to_datetime(df_data["Month"])
 df_data["Month_only"] = df_data["Month_dt"].dt.month
 
 # Auto Future Prediction (12 months)
+
+
 def predict_next_months(n_months=12):
     last_row = df_data.iloc[-1]
     prev_harvest = last_row["Total_QTY_kg"]
     prev_price = last_row["Avg_Price_Rs_per_kg"]
-    start_date = pd.to_datetime(last_row["Month"])
-    future_dates = [start_date + relativedelta(months=i) for i in range(1, n_months+1)]
+
+    # Start from current month instead of last row's month
+    current_date = datetime.now()
+    future_dates = [current_date + relativedelta(months=i) for i in range(n_months)]
+
     results = []
 
     seasonal_avg = df_data.groupby("Month_only")[[
@@ -61,6 +69,7 @@ def predict_next_months(n_months=12):
             "Month_only": month,
             "Quarter": quarter
         }
+
         X_p = price_scaler.transform(pd.DataFrame([price_row]))
         price_pred = price_model.predict(X_p)[0]
 
@@ -74,6 +83,7 @@ def predict_next_months(n_months=12):
         prev_price = price_pred
 
     return pd.DataFrame(results)
+
 
 # Manual Next-Month Prediction
 def predict_manual_next_month(

@@ -1,33 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>{% block title %}Greenhouse System{% endblock %}</title>
+
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
 
     <!-- NAVIGATION BAR -->
-    <nav style="padding:10px; background:#2c3e50;">
-        <a href="{{ url_for('dashboard') }}" style="color:white;">Dashboard</a> |
+    <nav class="navbar">
+        <div class="nav-left">
+            🌱 Greenhouse System
+        </div>
 
-        <a href="{{ url_for('next_month_prediction') }}" style="color:white;">
-            Prediction
-        </a> |
-
-        {% if session.get('role') == 'admin' %}
-            <a href="{{ url_for('users') }}" style="color:white;">Users</a> |
-        {% endif %}
-
-        <span style="color:white;">
-            Logged in as {{ session.get('username') }}
-        </span> |
-
-        <a href="{{ url_for('logout') }}" style="color:white;">Logout</a>
+        <div class="nav-right">
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('next_month_prediction') }}">Prediction</a>
+            <a href="{{ url_for('users') }}">Users</a>
+            <a href="{{ url_for('logout') }}" onclick="return confirm('Logout?')">Logout</a>
+        </div>
     </nav>
 
-    <hr>
-
     <!-- PAGE CONTENT -->
-    {% block content %}{% endblock %}
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
 
 </body>
 </html>

@@ -1,61 +1,104 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Login</title>
+    <meta charset="UTF-8">
+    <title>Login | Greenhouse System</title>
+
+    <!-- Use global CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
     <style>
+        /* Center login card */
+        .login-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #2e7d32, #66bb6a);
+        }
+
+        .login-card {
+            background: white;
+            padding: 30px;
+            width: 360px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .login-card h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #2e7d32;
+        }
+
         .password-container {
             position: relative;
-            display: inline-block;
         }
+
         .toggle-password {
             position: absolute;
-            right: 5px;
+            right: 10px;
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
             font-size: 18px;
         }
-        .flash-message {
-            color: red;
+
+        .forgot-link {
+            text-align: center;
+            margin-top: 10px;
         }
-        a {
-            text-decoration: none;
-            color: blue;
+
+        .forgot-link a {
+            color: #2e7d32;
+            font-weight: 500;
+        }
+
+        .forgot-link a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
 
-<h2>Login</h2>
+<div class="login-wrapper">
+    <div class="login-card">
 
-<!-- Flash messages -->
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    {% for category, msg in messages %}
-      <div class="flash-message">{{ msg }}</div>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
+        <h2>🌱 Login</h2>
 
-<form method="POST">
-    Username: <input type="text" name="username" required><br><br>
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, msg in messages %}
+              <div class="alert {{ category }}">{{ msg }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
 
-    Password:
-    <div class="password-container">
-        <input type="password" id="login_password" name="password" required>
-        <span class="toggle-password" onclick="togglePassword()">👁️</span>
-    </div><br><br>
+        <form method="POST">
+            <label>Username</label>
+            <input type="text" name="username" required>
 
-    <button type="submit">Login</button>
-</form>
+            <label>Password</label>
+            <div class="password-container">
+                <input type="password" id="login_password" name="password" required>
+                <span class="toggle-password" onclick="togglePassword()">👁️</span>
+            </div>
 
-<!-- Forgot password link -->
-<p><a href="{{ url_for('forgot_password') }}">Forgot Password?</a></p>
+            <button type="submit">Login</button>
+        </form>
+
+        <div class="forgot-link">
+            <a href="{{ url_for('forgot_password') }}">Forgot Password?</a>
+        </div>
+
+    </div>
+</div>
 
 <script>
 function togglePassword() {
-    var pwd = document.getElementById('login_password');
-    pwd.type = (pwd.type === 'password') ? 'text' : 'password';
+    const pwd = document.getElementById('login_password');
+    pwd.type = pwd.type === 'password' ? 'text' : 'password';
 }
 </script>
 

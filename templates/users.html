@@ -4,155 +4,383 @@
 
 {% block content %}
 
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
 <style>
+    /* PAGE TITLE */
+    h2.page-title {
+        color: #2e7d32;
+        margin-bottom: 20px;
+        text-align: left;
+        font-weight: bold;
+        font-size: 28px;
+    }
+
+    /* FORM CENTER */
+    .form-wrapper {
+        display: flex;
+        justify-content: center;
+    }
+
+    .form-card {
+        width: 520px;
+        background: #ffffff;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .form-group input,
+    .form-group select {
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        transition: 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        border-color: #2e7d32;
+        outline: none;
+        box-shadow: 0 0 5px rgba(46,125,50,0.3);
+    }
+
     .password-container {
         position: relative;
-        display: inline-block;
-        width: 150px; /* Width for Add User password */
     }
+
     .toggle-password {
         position: absolute;
-        right: 5px;
+        right: 8px;
         top: 50%;
         transform: translateY(-50%);
         cursor: pointer;
+        font-size: 18px;
+        color: #666;
+        transition: 0.2s;
     }
-    table th, table td {
-        padding: 8px 12px;
+
+    .toggle-password:hover {
+        color: #2e7d32;
+    }
+
+    .full-width {
+        grid-column: span 2;
         text-align: center;
+    }
+
+    .btn-primary {
+        background: #2e7d32;
+        color: white;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+    .btn-primary:hover {
+        background: #27632a;
+    }
+
+    .btn-secondary {
+        background: #f5f5f5;
+        color: #333;
+        border: 1px solid #ccc;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+    .btn-secondary:hover {
+        background: #e0e0e0;
+    }
+
+    /* SEARCH BAR LEFT ALIGN */
+    .search-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 25px;
+    }
+
+    .search-bar input {
+        padding: 8px;
+        width: 250px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        transition: 0.3s;
+    }
+
+    .search-bar input:focus {
+        border-color: #2e7d32;
+        outline: none;
+        box-shadow: 0 0 5px rgba(46,125,50,0.3);
+    }
+
+    .search-bar .btn-search {
+        background: #2e7d32;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+    .search-bar .btn-search:hover {
+        background: #27632a;
+    }
+
+    .search-bar .btn-clear {
+        background: #f5f5f5;
+        color: #333;
+        border: 1px solid #ccc;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+    .search-bar .btn-clear:hover {
+        background: #e0e0e0;
+    }
+
+    /* TABLE STYLING */
+    .page-card table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    .page-card table th, .page-card table td {
+        padding: 12px 10px;
+        border: 1px solid #ccc;
+        text-align: left;
         vertical-align: middle;
+        transition: 0.3s;
+    }
+
+    .page-card table th {
+        background-color: #c8e6c9; /* nicer green header */
+        font-weight: 600;
+        color: #2e7d32;
+    }
+
+    .page-card table tr:nth-child(even) {
+        background: #f9f9f9;
+    }
+
+    .page-card table input {
+        width: 100%;
+        padding: 6px 8px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        transition: 0.3s;
+    }
+
+    .page-card table input:focus {
+        border-color: #2e7d32;
+        outline: none;
+        box-shadow: 0 0 5px rgba(46,125,50,0.2);
+    }
+
+    .actions a {
+        color: red;
+        margin-left: 8px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+
+    .actions a:hover {
+        text-decoration: underline;
+    }
+
+    .actions button {
+        background: #1976d2;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .actions button:hover {
+        background: #115293;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .full-width {
+            grid-column: span 1;
+        }
+
+        .search-bar input {
+            width: 180px;
+        }
     }
 </style>
 
-<h2>All Users</h2>
+<!-- PAGE TITLE -->
+<h2 class="page-title">Users Management</h2>
 
-<!-- Search Form -->
-<form method="GET">
-    <input type="text" name="search"
-           placeholder="Search username/email"
-           value="{{ request.args.get('search') }}">
-    <button type="submit">Search</button>
-    <button type="button" onclick="window.location.href='{{ url_for('users') }}'">Clear</button>
-</form>
-
-<!-- ADD USER FORM (ADMIN ONLY) -->
 {% if role == 'admin' %}
-<hr>
-<h2>Add New User</h2>
+<!-- ADD USER FORM -->
+<div class="form-wrapper">
+    <div class="form-card">
+        <h2 style="text-align:center;">Add New User</h2>
+        <form method="POST">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input name="username" required pattern=".{3,}" title="Minimum 3 characters">
+                </div>
 
-<form method="POST">
-    Username:
-    <input name="username" required pattern=".{3,}" title="Minimum 3 characters"><br><br>
+                <div class="form-group">
+                    <label>Password (6 digits)</label>
+                    <div class="password-container">
+                        <input type="password" id="add_password" name="password"
+                               required pattern="\d{6}" title="Password must be exactly 6 digits">
+                        <span class="toggle-password" onclick="toggleAddPassword()">👁️</span>
+                    </div>
+                </div>
 
-    Password:
-    <div class="password-container">
-        <input type="password" id="add_password" name="password"
-               required pattern="\d{6}" title="Password must be exactly 6 digits"
-               style="width: 100%;">
-        <span class="toggle-password" onclick="toggleAddPassword()">👁️</span>
-    </div><br><br>
+                <div class="form-group">
+                    <label>Role</label>
+                    <select name="role">
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
 
-    Role:
-    <select name="role">
-        <option value="user">User</option>
-        <option value="admin">Admin</option>
-    </select><br><br>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input name="email" type="email" required>
+                </div>
 
-    Email:
-    <input name="email" type="email" required><br><br>
+                <div class="form-group">
+                    <label>Address</label>
+                    <input name="address" required>
+                </div>
 
-    Address:
-    <input name="address" required><br><br>
+                <div class="form-group">
+                    <label>Telephone</label>
+                    <input name="telephone" pattern="[0-9]{10}" required>
+                </div>
 
-    Telephone:
-    <input name="telephone" type="tel" pattern="[0-9]{10}"
-           placeholder="10-digit number" required><br><br>
-
-    <button type="submit">Add User</button>
-</form>
+                <div class="full-width">
+                    <button type="submit" class="btn-primary">Add User</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 
 <script>
 function toggleAddPassword() {
-    var pwd = document.getElementById('add_password');
-    pwd.type = (pwd.type === 'password') ? 'text' : 'password';
+    const pwd = document.getElementById("add_password");
+    pwd.type = pwd.type === "password" ? "text" : "password";
 }
 </script>
 {% endif %}
 
-<hr>
+<!-- SEARCH BAR LEFT ALIGNED -->
+<div class="search-bar">
+    <form method="GET">
+        <input type="text"
+               name="search"
+               placeholder="Enter username or email..."
+               value="{{ request.args.get('search') or '' }}">
+        <button type="submit" class="btn-search">Search</button>
+        <button type="button" class="btn-clear" onclick="window.location.href='{{ url_for('users') }}'">Clear</button>
+    </form>
+</div>
 
 <!-- USERS TABLE -->
-<table border="1" cellpadding="6" style="width: 100%;">
-<tr>
-    <th>ID</th>
-    <th>Username</th>
-    <th style="width: 180px;">New Password</th>
-    <th>Role</th>
-    <th>Email</th>
-    <th>Address</th>
-    <th>Telephone</th>
-    {% if role == 'admin' %}<th>Actions</th>{% endif %}
-</tr>
+<div class="page-card">
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Username</th>
+        <th style="width:200px;">New Password</th>
+        <th>Role</th>
+        <th>Email</th>
+        <th>Address</th>
+        <th>Telephone</th>
+        {% if role == 'admin' %}<th>Actions</th>{% endif %}
+    </tr>
 
-{% for u in users %}
-<tr>
-<form method="POST" action="{{ url_for('edit_user', user_id=u.id) }}">
-    <td>{{ u.id }}</td>
+    {% for u in users %}
+    <tr>
+    <form method="POST" action="{{ url_for('edit_user', user_id=u.id) }}">
+        <td>{{ u.id }}</td>
 
-    <td>
-        <input name="username" value="{{ u.username }}"
-               required pattern=".{3,}"
-               {% if role != 'admin' %}readonly{% endif %}>
-    </td>
+        <td><input name="username" value="{{ u.username }}" {% if role != 'admin' %}readonly{% endif %}></td>
 
-    <td style="width: 180px;">
-        {% if role == 'admin' %}
+        <td>
+            {% if role == 'admin' %}
             <input type="password" name="password"
-                   placeholder="Leave blank to keep current"
-                   pattern="\d{6}" title="Password must be exactly 6 digits"
-                   style="width: 100%;">
-        {% else %}
+                   placeholder="Leave blank"
+                   pattern="\d{6}"
+                   style="width:100%;">
+            {% else %}
             ********
-        {% endif %}
-    </td>
+            {% endif %}
+        </td>
 
-    <td>
+        <td>
+            {% if role == 'admin' %}
+            <select name="role">
+                <option value="user" {% if u.role=='user' %}selected{% endif %}>User</option>
+                <option value="admin" {% if u.role=='admin' %}selected{% endif %}>Admin</option>
+            </select>
+            {% else %}
+            {{ u.role }}
+            {% endif %}
+        </td>
+
+        <td><input name="email" value="{{ u.email }}" {% if role != 'admin' %}readonly{% endif %}></td>
+        <td><input name="address" value="{{ u.address }}" {% if role != 'admin' %}readonly{% endif %}></td>
+        <td><input name="telephone" value="{{ u.telephone }}" {% if role != 'admin' %}readonly{% endif %}></td>
+
         {% if role == 'admin' %}
-        <select name="role">
-            <option value="user" {% if u.role=='user' %}selected{% endif %}>User</option>
-            <option value="admin" {% if u.role=='admin' %}selected{% endif %}>Admin</option>
-        </select>
-        {% else %}
-        {{ u.role }}
+        <td class="actions">
+            <button type="submit">Update</button>
+            <a href="{{ url_for('delete_user_route', user_id=u.id) }}" onclick="return confirm('Delete user?')">Delete</a>
+        </td>
         {% endif %}
-    </td>
-
-    <td>
-        <input name="email" type="email" value="{{ u.email }}"
-               required {% if role != 'admin' %}readonly{% endif %}>
-    </td>
-
-    <td>
-        <input name="address" value="{{ u.address }}"
-               required {% if role != 'admin' %}readonly{% endif %}>
-    </td>
-
-    <td>
-        <input name="telephone" type="tel" value="{{ u.telephone }}"
-               pattern="[0-9]{10}"
-               required {% if role != 'admin' %}readonly{% endif %}>
-    </td>
-
-    {% if role == 'admin' %}
-    <td>
-        <button type="submit">Update</button>
-        <a href="{{ url_for('delete_user_route', user_id=u.id) }}"
-           onclick="return confirm('Delete user?')">Delete</a>
-    </td>
-    {% endif %}
-</form>
-</tr>
-{% endfor %}
+    </form>
+    </tr>
+    {% endfor %}
 </table>
+</div>
 
 {% endblock %}

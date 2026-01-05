@@ -4,48 +4,146 @@
 
 {% block content %}
 
-<h2>Manual Next-Month Prediction</h2>
+<style>
+    .prediction-card {
+        max-width: 700px;
+        margin: 0 auto;
+        background: #ffffff;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
 
-<form method="POST">
-    Temperature (°C):
-    <input type="number" name="Temperature_C" step="0.1" value="28" required><br><br>
+    .prediction-card h2 {
+        text-align: center;
+        color: #2e7d32;
+        margin-bottom: 20px;
+    }
 
-    Rainfall (mm):
-    <input type="number" name="Rainfall_mm" step="0.1" value="120" required><br><br>
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px 20px;
+    }
 
-    Fertilizer (kg):
-    <input type="number" name="Fertilizer_kg" step="0.1" value="50" required><br><br>
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
 
-    Demand Index:
-    <input type="number" name="Demand_Index" step="0.01" value="0.5" required><br><br>
+    .form-group label {
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
 
-    Supply Index:
-    <input type="number" name="Supply_Index" step="0.01" value="0.5" required><br><br>
+    .form-group input {
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+    }
 
-    Holiday (0 / 1):
-    <input type="number" name="Holiday" min="0" max="1" step="1" value="0" required><br><br>
+    .full-width {
+        grid-column: span 2;
+    }
 
-    <button type="submit">Predict Next Month</button>
-</form>
+    .prediction-card button {
+        width: 100%;
+        padding: 10px;
+        background: #2e7d32;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+    }
 
-{% if manual_predictions %}
-<hr>
-<h3>Prediction Result</h3>
+    .prediction-card button:hover {
+        background: #1b5e20;
+    }
 
-<table border="1" cellpadding="6">
-    <tr>
-        <th>Month</th>
-        <th>Harvest (kg)</th>
-        <th>Price (Rs/kg)</th>
-    </tr>
-    {% for row in manual_predictions %}
-    <tr>
-        <td>{{ row["Month"] }}</td>
-        <td>{{ row["Harvest (kg)"] }}</td>
-        <td>{{ row["Price (Rs/kg)"] }}</td>
-    </tr>
-    {% endfor %}
-</table>
-{% endif %}
+    .result-table {
+        margin-top: 25px;
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .result-table th,
+    .result-table td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: center;
+    }
+
+    .result-table th {
+        background: #e8f5e9;
+    }
+</style>
+
+<div class="prediction-card">
+
+    <h2>📊 Manual Next-Month Prediction</h2>
+
+    <form method="POST">
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label>Temperature (°C)</label>
+                <input type="number" name="Temperature_C" step="0.1" value="28" required>
+            </div>
+
+            <div class="form-group">
+                <label>Rainfall (mm)</label>
+                <input type="number" name="Rainfall_mm" step="0.1" value="120" required>
+            </div>
+
+            <div class="form-group">
+                <label>Fertilizer (kg)</label>
+                <input type="number" name="Fertilizer_kg" step="0.1" value="50" required>
+            </div>
+
+            <div class="form-group">
+                <label>Demand Index</label>
+                <input type="number" name="Demand_Index" step="0.01" value="0.5" required>
+            </div>
+
+            <div class="form-group">
+                <label>Supply Index</label>
+                <input type="number" name="Supply_Index" step="0.01" value="0.5" required>
+            </div>
+
+            <div class="form-group">
+                <label>Holiday (0 or 1)</label>
+                <input type="number" name="Holiday" min="0" max="1" step="1" value="0" required>
+            </div>
+
+            <div class="full-width">
+                <button type="submit">Predict Next Month</button>
+            </div>
+
+        </div>
+    </form>
+
+    {% if manual_predictions %}
+    <hr>
+
+    <h3 style="text-align:center; color:#2e7d32;">📈 Prediction Result</h3>
+
+    <table class="result-table">
+        <tr>
+            <th>Month</th>
+            <th>Harvest (kg)</th>
+            <th>Price (Rs/kg)</th>
+        </tr>
+        {% for row in manual_predictions %}
+        <tr>
+            <td>{{ row["Month"] }}</td>
+            <td>{{ row["Harvest (kg)"] }}</td>
+            <td>{{ row["Price (Rs/kg)"] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+</div>
 
 {% endblock %}

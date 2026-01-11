@@ -24,7 +24,6 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -34,14 +33,12 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-
 # -------------------------------
 # DEFAULT ROUTE
 # -------------------------------
 @app.route('/')
 def index():
     return redirect(url_for('login'))
-
 
 # -------------------------------
 # LOGIN
@@ -64,7 +61,6 @@ def login():
 
     return render_template('login.html')
 
-
 # -------------------------------
 # FORGOT PASSWORD
 # -------------------------------
@@ -86,13 +82,12 @@ def forgot_password():
 @app.route('/reset-password/<username>', methods=['GET', 'POST'])
 def reset_password(username):
     if request.method == 'POST':
-        new_password = request.form['new_password']  # ✅ FIXED
+        new_password = request.form['new_password']
         update_user_password(username, new_password)
         flash("Password updated successfully! You can now login.")
         return redirect(url_for('login'))
 
     return render_template('reset_password.html', username=username)
-
 
 # -------------------------------
 # LOGOUT
@@ -110,14 +105,12 @@ def logout():
         </script>
     """
 
-
 @app.route('/logout_confirm')
 @login_required
 def logout_confirm():
     session.clear()
     flash("Logged out successfully.")
     return redirect(url_for('login'))
-
 
 # -------------------------------
 # DASHBOARD
@@ -127,7 +120,6 @@ def logout_confirm():
 def dashboard():
     auto_predictions = predict_next_months().to_dict(orient='records')
     return render_template('dashboard.html', auto_predictions=auto_predictions)
-
 
 # -------------------------------
 # NEXT MONTH PREDICTION
@@ -151,7 +143,6 @@ def next_month_prediction():
         'next_month_prediction.html',
         manual_predictions=manual_predictions
     )
-
 
 # -------------------------------
 # USERS PAGE
@@ -186,11 +177,10 @@ def users():
         role=session.get('role')
     )
 
-
 # -------------------------------
 # EDIT USER (admin only)
 # -------------------------------
-@app.route('/edit_user/<int:user_id>', methods=['POST'])
+@app.route('/edit_user/<user_id>', methods=['POST'])
 @login_required
 @admin_required
 def edit_user(user_id):
@@ -209,18 +199,16 @@ def edit_user(user_id):
     flash("User updated successfully!")
     return redirect(url_for('users'))
 
-
 # -------------------------------
 # DELETE USER (admin only)
 # -------------------------------
-@app.route('/delete_user/<int:user_id>')
+@app.route('/delete_user/<user_id>')
 @login_required
 @admin_required
 def delete_user_route(user_id):
     delete_user(user_id)
     flash("User deleted successfully!")
     return redirect(url_for('users'))
-
 
 # -------------------------------
 # RUN APP

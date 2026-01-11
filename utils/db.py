@@ -1,43 +1,31 @@
 # utils/db.py
-import psycopg2
-from psycopg2.extras import RealDictCursor
+from pymongo import MongoClient
+from bson.objectid import ObjectId
+from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from dotenv import load_dotenv
-from werkzeug.security import generate_password_hash, check_password_hash
 
-# Load environment variables
+# -------------------------------
+# LOAD ENVIRONMENT VARIABLES
+# -------------------------------
 load_dotenv()
-DB_HOST = os.getenv("DB_HOST")
-DB_NAME = os.getenv("DB_NAME")
-DB_USER = os.getenv("DB_USER")
-DB_PASS = os.getenv("DB_PASS")
+# Replace this with your actual MongoDB Atlas URI
+MONGO_URI = os.getenv("MONGO_URI") or "mongodb+srv://dinithisasanka01_db_user:dinithi2005@greenhouse.svuv3cn.mongodb.net/greenhouse_db?retryWrites=true&w=majority"
 
-
+   
 # -------------------------------
-# DATABASE CONNECTION
+# MONGODB CONNECTION
 # -------------------------------
-def get_connection():
-    """Return a new database connection."""
-    return psycopg2.connect(
-        host=DB_HOST,
-        database=DB_NAME,
-        user=DB_USER,
-        password=DB_PASS
-    )
-
+client = MongoClient(MONGO_URI)
+db = client['greenhouse_db']       # database
+users_col = db['users']            # users collection
 
 # -------------------------------
 # FETCH ALL USERS
 # -------------------------------
 def fetch_users():
-    conn = get_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM users ORDER BY id")
-    users = cur.fetchall()
-    cur.close()
-    conn.close()
-    return users
-
+    """Return all users as a list of dicts."""
+    return list(users_col.find())
 
 # -------------------------------
 # ADD USER
@@ -45,122 +33,74 @@ def fetch_users():
 def add_user(username, password, role, email, address, telephone):
     """Add a new user with hashed password."""
     hashed_pwd = generate_password_hash(password)
-    conn = get_connection()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO users (username, password, role, email, address, telephone)
-        VALUES (%s, %s, %s, %s, %s, %s)
-    """, (username, hashed_pwd, role, email, address, telephone))
-    conn.commit()
-    cur.close()
-    conn.close()
-
+    users_col.insert_one({
+        "username": username,
+        "password": hashed_pwd,
+        "role": role,
+        "email": email,
+        "address": address,
+        "telephone": telephone
+    })
 
 # -------------------------------
 # DELETE USER
 # -------------------------------
 def delete_user(user_id):
-    conn = get_connection()
-    cur = conn.cursor()
-    cur.execute("DELETE FROM users WHERE id = %s", (user_id,))
-    conn.commit()
-    cur.close()
-    conn.close()
-
+    """Delete a user by ObjectId string."""
+    users_col.delete_one({"_id": ObjectId(user_id)})
 
 # -------------------------------
 # UPDATE USER
 # -------------------------------
 def update_user(user_id, username, role, email, address, telephone, password=None):
-    """
-    Update user details. If password is provided, hash it and update; otherwise keep existing password.
-    """
-    conn = get_connection()
-    cur = conn.cursor()
-
-    if password:  # If new password provided
-        hashed_pwd = generate_password_hash(password)
-        cur.execute("""
-            UPDATE users
-            SET username=%s, role=%s, email=%s, address=%s, telephone=%s, password=%s
-            WHERE id=%s
-        """, (username, role, email, address, telephone, hashed_pwd, user_id))
-    else:
-        cur.execute("""
-            UPDATE users
-            SET username=%s, role=%s, email=%s, address=%s, telephone=%s
-            WHERE id=%s
-        """, (username, role, email, address, telephone, user_id))
-
-    conn.commit()
-    cur.close()
-    conn.close()
-
+    """Update user details. Hash password if provided."""
+    update_data = {
+        "username": username,
+        "role": role,
+        "email": email,
+        "address": address,
+        "telephone": telephone
+    }
+    if password:
+        update_data["password"] = generate_password_hash(password)
+    users_col.update_one({"_id": ObjectId(user_id)}, {"$set": update_data})
 
 # -------------------------------
 # SEARCH USERS
 # -------------------------------
 def search_users(keyword):
-    conn = get_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    like = f"%{keyword}%"
-    cur.execute("""
-        SELECT * FROM users
-        WHERE username ILIKE %s
-           OR email ILIKE %s
-           OR role ILIKE %s
-           OR telephone ILIKE %s
-    """, (like, like, like, like))
-    users = cur.fetchall()
-    cur.close()
-    conn.close()
-    return users
-
+    """Search users by username, email, role, or telephone (case-insensitive)."""
+    query = {
+        "$or": [
+            {"username": {"$regex": keyword, "$options": "i"}},
+            {"email": {"$regex": keyword, "$options": "i"}},
+            {"role": {"$regex": keyword, "$options": "i"}},
+            {"telephone": {"$regex": keyword, "$options": "i"}}
+        ]
+    }
+    return list(users_col.find(query))
 
 # -------------------------------
 # VALIDATE LOGIN
 # -------------------------------
 def validate_user(username, password):
-    """
-    Check if the given username exists and the password matches the hashed password in DB.
-    Returns the user dictionary if successful, else None.
-    """
-    conn = get_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    try:
-        cur.execute("SELECT * FROM users WHERE username = %s", (username,))
-        user = cur.fetchone()
-    finally:
-        cur.close()
-        conn.close()
-
-    if user and check_password_hash(user['password'], password):
+    """Check if username exists and password matches. Return user dict if valid, else None."""
+    user = users_col.find_one({"username": username})
+    if user and check_password_hash(user["password"], password):
         return user
     return None
-
 
 # -------------------------------
 # FETCH SINGLE USER BY USERNAME
 # -------------------------------
 def fetch_user_by_username(username):
-    conn = get_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM users WHERE username = %s", (username,))
-    user = cur.fetchone()
-    cur.close()
-    conn.close()
-    return user
-
+    """Return a single user dict by username."""
+    return users_col.find_one({"username": username})
 
 # -------------------------------
 # RESET USER PASSWORD
 # -------------------------------
 def update_user_password(username, new_password):
-    """Hash the new password and update for the given username."""
+    """Update user's password with hashed new password."""
     hashed = generate_password_hash(new_password)
-    conn = get_connection()
-    cur = conn.cursor()
-    cur.execute("UPDATE users SET password=%s WHERE username=%s", (hashed, username))
-    conn.commit()
-    cur.close()
-    conn.close()
+    users_col.update_one({"username": username}, {"$set": {"password": hashed}})

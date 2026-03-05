@@ -1,15 +1,27 @@
 # utils/model_loader.py
 import joblib
 
-# Load trained models
-harvest_model = joblib.load("models/harvest_model.pkl")
-price_model = joblib.load("models/price_model.pkl")
+# ============================
+# Load best models 
+# ============================
 
+
+harvest_model = joblib.load("models/harvest_gb.pkl")  
+
+
+price_model = joblib.load("models/price_ridge.pkl")  
+
+# ============================
 # Load scalers
-harvest_scaler = joblib.load("models/harvest_scaler.pkl")
-price_scaler = joblib.load("models/price_scaler.pkl")
+# ============================
 
-# Feature lists (must match training)
+harvest_scaler = joblib.load("models/harvest_scaler.pkl")
+price_scaler   = joblib.load("models/price_scaler.pkl")
+
+# ============================
+# Feature lists 
+# ============================
+
 harvest_features = [
     'Month_num', 'Temperature_C', 'Rainfall_mm',
     'Prev_Harvest_kg', 'Fertilizer_kg',

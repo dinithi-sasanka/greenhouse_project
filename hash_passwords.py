@@ -1,4 +1,3 @@
-# hash_passwords.py
 from utils.db import get_connection
 from werkzeug.security import generate_password_hash
 
@@ -8,7 +7,7 @@ cur.execute("SELECT id, password FROM users")
 users = cur.fetchall()
 
 for user_id, plain_pwd in users:
-    # Skip if already Werkzeug hash
+    
     if plain_pwd.startswith("pbkdf2:sha256:"):
         continue
     hashed = generate_password_hash(plain_pwd)

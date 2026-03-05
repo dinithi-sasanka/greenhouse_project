@@ -1,34 +1,35 @@
-
-
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 from utils.model_loader import (
-    harvest_model,
-    price_model,
+    harvest_model,   
+    price_model,     
     harvest_scaler,
     price_scaler
 )
 from datetime import datetime
 
+# ============================
+# Load historical dataset
+# ============================
 DATA_PATH = "data/dataset.csv"
 df_data = pd.read_csv(DATA_PATH)
 df_data["Month_dt"] = pd.to_datetime(df_data["Month"])
 df_data["Month_only"] = df_data["Month_dt"].dt.month
 
+# ============================
 # Auto Future Prediction (12 months)
-
-
+# ============================
 def predict_next_months(n_months=12):
     last_row = df_data.iloc[-1]
     prev_harvest = last_row["Total_QTY_kg"]
     prev_price = last_row["Avg_Price_Rs_per_kg"]
 
-    # Start from current month instead of last row's month
     current_date = datetime.now()
     future_dates = [current_date + relativedelta(months=i) for i in range(n_months)]
 
     results = []
 
+   
     seasonal_avg = df_data.groupby("Month_only")[[
         "Temperature_C","Rainfall_mm","Fertilizer_kg","Demand_Index","Supply_Index"
     ]].mean()
@@ -37,6 +38,7 @@ def predict_next_months(n_months=12):
         month = d.month
         quarter = (month - 1)//3 + 1
         season = seasonal_avg.loc[month]
+
 
         harvest_row = {
             "Month_num": d.toordinal(),
@@ -50,7 +52,8 @@ def predict_next_months(n_months=12):
         }
 
         X_h = harvest_scaler.transform(pd.DataFrame([harvest_row]))
-        harvest_pred = harvest_model.predict(X_h)[0]
+        harvest_pred = harvest_model.predict(X_h)[0]  # GB model prediction
+
 
         price_row = {
             "Month_num": d.toordinal(),
@@ -71,12 +74,12 @@ def predict_next_months(n_months=12):
         }
 
         X_p = price_scaler.transform(pd.DataFrame([price_row]))
-        price_pred = price_model.predict(X_p)[0]
+        price_pred = price_model.predict(X_p)[0]  # Ridge model prediction
 
         results.append({
             "Month": d.strftime("%Y-%m"),
-            "Harvest (kg)": round(harvest_pred,2),
-            "Price (Rs/kg)": round(price_pred,2)
+            "Harvest (kg)": round(harvest_pred, 2),
+            "Price (Rs/kg)": round(price_pred, 2)
         })
 
         prev_harvest = harvest_pred
@@ -84,8 +87,9 @@ def predict_next_months(n_months=12):
 
     return pd.DataFrame(results)
 
-
+# ============================
 # Manual Next-Month Prediction
+# ============================
 def predict_manual_next_month(
     Temperature_C,
     Rainfall_mm,
@@ -128,12 +132,12 @@ def predict_manual_next_month(
                                          "Price_MA3","Price_MA6","Month_only","Quarter"]
 
     X_h = harvest_scaler.transform(pd.DataFrame([row])[harvest_features])
-    harvest_pred = harvest_model.predict(X_h)[0]
+    harvest_pred = harvest_model.predict(X_h)[0]  # GB prediction
 
     row["Prev_Harvest_kg"] = harvest_pred
 
     X_p = price_scaler.transform(pd.DataFrame([row])[price_features])
-    price_pred = price_model.predict(X_p)[0]
+    price_pred = price_model.predict(X_p)[0]  # Ridge prediction
 
     return pd.DataFrame([{
         "Month": d.strftime("%Y-%m"),

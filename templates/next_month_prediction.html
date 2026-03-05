@@ -5,78 +5,87 @@
 {% block content %}
 
 <style>
-    .prediction-card {
-        max-width: 700px;
-        margin: 0 auto;
-        background: #ffffff;
-        padding: 25px;
-        border-radius: 10px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    }
 
-    .prediction-card h2 {
-        text-align: center;
-        color: #2e7d32;
-        margin-bottom: 20px;
-    }
+.prediction-card {
+    max-width: 700px;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
 
-    .form-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px 20px;
-    }
+.prediction-card h2 {
+    text-align: center;
+    color: #2e7d32;
+    margin-bottom: 20px;
+}
 
-    .form-group {
-        display: flex;
-        flex-direction: column;
-    }
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px 20px;
+}
 
-    .form-group label {
-        font-weight: 600;
-        margin-bottom: 5px;
-    }
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
 
-    .form-group input {
-        padding: 8px;
-        border-radius: 6px;
-        border: 1px solid #ccc;
-    }
+.form-group label {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
 
-    .full-width {
-        grid-column: span 2;
-    }
+.form-group input {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
 
-    .prediction-card button {
-        width: 100%;
-        padding: 10px;
-        background: #2e7d32;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-size: 16px;
-        cursor: pointer;
-    }
+.full-width {
+    grid-column: span 2;
+}
 
-    .prediction-card button:hover {
-        background: #1b5e20;
-    }
+.prediction-card button {
+    width: 100%;
+    padding: 10px;
+    background: #2e7d32;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+}
 
-    .result-table {
-        margin-top: 25px;
-        width: 100%;
-        border-collapse: collapse;
-    }
+.prediction-card button:hover {
+    background: #1b5e20;
+}
 
-    .result-table th,
-    .result-table td {
-        border: 1px solid #ccc;
-        padding: 8px;
-        text-align: center;
-    }
 
-    .result-table th {
-        background: #e8f5e9;
-    }
+
+.result-table {
+    margin-top: 25px;
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+}
+
+.result-table th,
+.result-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+}
+
+
+
+.result-table th {
+    background: #e8f5e9;
+    color: #2e7d32;
+    font-weight: 600;
+}
+
 </style>
 
 <div class="prediction-card">
@@ -86,41 +95,47 @@
     <form method="POST">
         <div class="form-grid">
 
-            <div class="form-group">
-                <label>Temperature (°C)</label>
-                <input type="number" name="Temperature_C" step="0.1" value="28" required>
-            </div>
+    <div class="form-group">
+        <label>Temperature (°C)</label>
+        <input type="number" name="Temperature_C" step="0.1"
+        value="{{ request.form.get('Temperature_C', 28) }}" required>
+    </div>
 
-            <div class="form-group">
-                <label>Rainfall (mm)</label>
-                <input type="number" name="Rainfall_mm" step="0.1" value="120" required>
-            </div>
+    <div class="form-group">
+        <label>Rainfall (mm)</label>
+        <input type="number" name="Rainfall_mm" step="0.1"
+        value="{{ request.form.get('Rainfall_mm', 120) }}" required>
+    </div>
 
-            <div class="form-group">
-                <label>Fertilizer (kg)</label>
-                <input type="number" name="Fertilizer_kg" step="0.1" value="50" required>
-            </div>
+    <div class="form-group">
+        <label>Fertilizer (kg)</label>
+        <input type="number" name="Fertilizer_kg" step="0.1"
+        value="{{ request.form.get('Fertilizer_kg', 50) }}" required>
+    </div>
 
-            <div class="form-group">
-                <label>Demand Index</label>
-                <input type="number" name="Demand_Index" step="0.01" value="0.5" required>
-            </div>
+    <div class="form-group">
+        <label>Demand Index</label>
+        <input type="number" name="Demand_Index" step="0.01"
+        value="{{ request.form.get('Demand_Index', 0.5) }}" required>
+    </div>
 
-            <div class="form-group">
-                <label>Supply Index</label>
-                <input type="number" name="Supply_Index" step="0.01" value="0.5" required>
-            </div>
+    <div class="form-group">
+        <label>Supply Index</label>
+        <input type="number" name="Supply_Index" step="0.01"
+        value="{{ request.form.get('Supply_Index', 0.5) }}" required>
+    </div>
 
-            <div class="form-group">
-                <label>Holiday (0 or 1)</label>
-                <input type="number" name="Holiday" min="0" max="1" step="1" value="0" required>
-            </div>
+    <div class="form-group">
+        <label>Holiday (0 or 1)</label>
+        <input type="number" name="Holiday" min="0" max="1" step="1"
+        value="{{ request.form.get('Holiday', 0) }}" required>
+    </div>
 
-            <div class="full-width">
-                <button type="submit">Predict Next Month</button>
-            </div>
+    <div class="full-width">
+        <button type="submit">Predict Next Month</button>
+    </div>
 
-        </div>
+</div>
     </form>
 
     {% if manual_predictions %}

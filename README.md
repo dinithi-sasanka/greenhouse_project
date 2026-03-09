@@ -577,10 +577,6 @@ Users must enter:
 
 ---
 
-Good catch 👍 — you should clarify the **role permissions** in the User Guide.
-
-Update the **User Management section** like this:
-
 ---
 
 # 👥 6. User Management

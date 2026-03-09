@@ -467,7 +467,7 @@ http://127.0.0.1:5000
 
 ---
 
-Great idea 👍 Adding a **User Guide with navigation instructions** will make your GitHub repository look **very professional**. You can add the following section to your **README.md**.
+
 
 ---
 
